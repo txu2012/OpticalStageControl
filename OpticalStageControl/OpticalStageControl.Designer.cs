@@ -29,6 +29,7 @@ namespace OpticalStageControl
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OpticalStageControl));
             this.cbSerial = new System.Windows.Forms.ComboBox();
             this.tbSerial = new System.Windows.Forms.TextBox();
             this.btConnect = new System.Windows.Forms.Button();
@@ -62,12 +63,14 @@ namespace OpticalStageControl
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.otherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.serialTesterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.pnDevice.SuspendLayout();
             this.gbBtnCtrl.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudDistance)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudVelocity)).BeginInit();
             this.gbMode.SuspendLayout();
             this.menuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // cbSerial
@@ -132,7 +135,7 @@ namespace OpticalStageControl
             this.pnDevice.Controls.Add(this.btHomeEdge);
             this.pnDevice.Controls.Add(this.btHomeCenter);
             this.pnDevice.Controls.Add(this.btTest);
-            this.pnDevice.Location = new System.Drawing.Point(3, 71);
+            this.pnDevice.Location = new System.Drawing.Point(3, 75);
             this.pnDevice.Name = "pnDevice";
             this.pnDevice.Size = new System.Drawing.Size(968, 405);
             this.pnDevice.TabIndex = 5;
@@ -429,6 +432,7 @@ namespace OpticalStageControl
             // 
             // menuStrip1
             // 
+            this.menuStrip1.BackColor = System.Drawing.SystemColors.Control;
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.otherToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
@@ -452,11 +456,23 @@ namespace OpticalStageControl
             this.serialTesterToolStripMenuItem.Text = "Serial Tester";
             this.serialTesterToolStripMenuItem.Click += new System.EventHandler(this.serialTesterToolStripMenuItem_Click);
             // 
-            // Form1
+            // pictureBox1
+            // 
+            this.pictureBox1.ErrorImage = null;
+            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
+            this.pictureBox1.InitialImage = null;
+            this.pictureBox1.Location = new System.Drawing.Point(921, 28);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(50, 44);
+            this.pictureBox1.TabIndex = 7;
+            this.pictureBox1.TabStop = false;
+            // 
+            // OpticalStageControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(977, 482);
+            this.ClientSize = new System.Drawing.Size(977, 485);
+            this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.pnDevice);
             this.Controls.Add(this.btRefresh);
             this.Controls.Add(this.btDisconnect);
@@ -466,7 +482,7 @@ namespace OpticalStageControl
             this.Controls.Add(this.menuStrip1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MainMenuStrip = this.menuStrip1;
-            this.Name = "Form1";
+            this.Name = "OpticalStageControl";
             this.Text = "Optical Stage Control";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
@@ -480,6 +496,7 @@ namespace OpticalStageControl
             this.gbMode.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -520,6 +537,7 @@ namespace OpticalStageControl
         private System.Windows.Forms.ToolStripMenuItem otherToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem serialTesterToolStripMenuItem;
         private System.Windows.Forms.TextBox tbResponse;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
 
