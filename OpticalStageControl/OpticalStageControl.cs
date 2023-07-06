@@ -7,12 +7,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace OpticalStageControl
 {
     public partial class OpticalStageControl : Form, IStageView
     {
-        private SerialCom serialCom;
         private StagePresenter Presenter;
         public OpticalStageControl()
         {
@@ -20,6 +20,30 @@ namespace OpticalStageControl
             Presenter = new StagePresenter();
             Presenter.AddView(this);
         }
+
+        // Detect USB Device plug in/removal and refresh COM list
+        protected override void WndProc(ref Message m)
+        {
+            base.WndProc(ref m);
+
+            int WM_DEVICECHANGE = 0x219, 
+                DBT_DEVICEARRIVAL = 0x8000, 
+                DBT_DEVICEREMOVECOMPLETE = 0x8004, 
+                DBT_DEVTYP_PORT = 0x00000003;
+
+            if (m.Msg == WM_DEVICECHANGE)
+            {
+                if ((int)m.WParam == DBT_DEVICEARRIVAL || (int)m.WParam == DBT_DEVICEREMOVECOMPLETE)
+                {
+                    int devType = Marshal.ReadInt32(m.LParam, 4);
+                    if (devType == DBT_DEVTYP_PORT)
+                    {
+                        RefreshComs();
+                    }
+                }
+            }
+        }
+    
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
