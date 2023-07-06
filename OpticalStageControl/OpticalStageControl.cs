@@ -43,7 +43,6 @@ namespace OpticalStageControl
                 }
             }
         }
-    
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -67,10 +66,8 @@ namespace OpticalStageControl
             UpdateDisplay();
         }
 
-        public void DisplayError()
-        {
+        public void DisplayError() {}
 
-        }
         public void UpdateDisplay()
         {
             tbSerial.Text = (Presenter.SerialConnected == true ? Presenter.SerialCom.PortName + ": Connected." : "Disconnected.");
@@ -119,7 +116,11 @@ namespace OpticalStageControl
             if (cbSerial.SelectedItem != null)
             {
                 if (!Presenter.SerialConnected)
+                {
+                    System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.WaitCursor;
                     Presenter.OpenSerialCom(cbSerial.SelectedItem.ToString());
+                    System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Arrow;
+                }
             }
         }
 

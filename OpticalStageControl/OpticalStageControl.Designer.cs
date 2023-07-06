@@ -274,7 +274,7 @@ namespace OpticalStageControl
             // nudDistance
             // 
             this.nudDistance.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.nudDistance.Location = new System.Drawing.Point(207, 26);
+            this.nudDistance.Location = new System.Drawing.Point(557, 37);
             this.nudDistance.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -290,7 +290,7 @@ namespace OpticalStageControl
             this.label2.AutoSize = true;
             this.label2.Enabled = false;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(329, 28);
+            this.label2.Location = new System.Drawing.Point(96, 39);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(154, 24);
             this.label2.TabIndex = 12;
@@ -322,7 +322,7 @@ namespace OpticalStageControl
             this.nudVelocity.BackColor = System.Drawing.SystemColors.ScrollBar;
             this.nudVelocity.Enabled = false;
             this.nudVelocity.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.nudVelocity.Location = new System.Drawing.Point(492, 26);
+            this.nudVelocity.Location = new System.Drawing.Point(256, 37);
             this.nudVelocity.Maximum = new decimal(new int[] {
             200,
             0,
@@ -342,7 +342,7 @@ namespace OpticalStageControl
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(55, 28);
+            this.label1.Location = new System.Drawing.Point(407, 39);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(146, 24);
             this.label1.TabIndex = 11;

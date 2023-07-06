@@ -75,23 +75,32 @@ namespace OpticalStageControl
             {
                 SerialCom.ClosePort();
                 if (fw == 0xfe)
-                    CommandDisplay = AppendResponse(CommandDisplay, "Connection timed out. Try reconnecting again.");
+                {
+                    CommandDisplay = AppendResponse(CommandDisplay, "Connection timed out. Retrying connection.");
+                    // If timed out, try a second time. Plugging in the nano may cause a timeout when first connecting.
+                    if (retryConnection == 0)
+                    {
+                        OpenSerialCom(port_name);
+                        retryConnection++;
+                    }
+                }
                 else
                     CommandDisplay = AppendResponse(CommandDisplay, "Connection failed.");
             }
-
-            if (SerialCom.PortConnected)
+            else
             {
-                serialConnected = SerialCom.PortConnected;
-                Motor = new MotorCommand(SerialCom);
+                if (SerialCom.PortConnected)
+                {
+                    serialConnected = SerialCom.PortConnected;
+                    Motor = new MotorCommand(SerialCom);
 
-                CommandDisplay = AppendResponse(CommandDisplay, "Connection successful.");
-                SetMotorPositions();
-                GetMotorLimits();
-                GetMotorVelocity();
+                    CommandDisplay = AppendResponse(CommandDisplay, "Connection successful.");
+                    SetMotorPositions();
+                    GetMotorLimits();
+                    GetMotorVelocity();
+                    retryConnection = 0;
+                }
             }
-            
-
             UpdateViewDisplays();
         }
         public void CloseSerialCom()
@@ -118,6 +127,7 @@ namespace OpticalStageControl
         private short motor_velocity = 31;
         private bool serialConnected = false;
         private int firmwareVersion = 1;
+        private int retryConnection = 0;
 
         public string CommandDisplay { get; private set; }
         #endregion
