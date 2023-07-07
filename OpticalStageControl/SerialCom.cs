@@ -68,8 +68,17 @@ namespace OpticalStageControl
                 PortConnected = false;
             }
         }
-
-        public byte[] PortWriteReadByte(byte[] byte_arr, int length, int expected_response_len = 999)
+        
+        /***
+         * Parameters:
+         * @byte_arr              : Command list with parameters sent to the microcontroller
+         * @expected_response_len : Length of the expected response from microcontroller, 
+         *                          default set to 999 for testing serial commands to see output.
+         * 
+         * @return                : Array of bytes returned from the microcontroller. 
+         *                          Checks first byte as the buffer for the next set of bytes for the response
+         */
+        public byte[] PortWriteReadByte(byte[] byte_arr, int expected_response_len = 999)
         {
             byte[] data = new byte[1];
             try
@@ -77,7 +86,7 @@ namespace OpticalStageControl
                 if (!port.IsOpen)
                     throw new SerialException("Device is not connected.");
                 Console.WriteLine($"byteArr:{BitConverter.ToString(byte_arr)}, length:{byte_arr.Length}");
-                port.Write(byte_arr, 0, length);
+                port.Write(byte_arr, 0, byte_arr.Length);
 
                 Thread.Sleep(100);
                 int buffer = port.ReadByte();
@@ -115,7 +124,7 @@ namespace OpticalStageControl
         {
             List<byte[]> ret = new List<byte[]>();
             ret.Add(new byte[] { 0x01, 0x01 });
-            ret.Add(PortWriteReadByte(ret[0], 2, 1));
+            ret.Add(PortWriteReadByte(ret[0], 1));
             PrintByteArr(ret[1]);
             
             return ret;
@@ -125,7 +134,7 @@ namespace OpticalStageControl
         {
             List<byte[]> ret = new List<byte[]>();
             ret.Add(new byte[] { 0x01, 0x02 });
-            ret.Add(PortWriteReadByte(ret[0], 2, 2));
+            ret.Add(PortWriteReadByte(ret[0], 2));
             PrintByteArr(ret[1]);
 
             return ret[1][1];
@@ -137,6 +146,7 @@ namespace OpticalStageControl
             Console.WriteLine(hex);
         }
 
+        #region Append Byte Arrays
         public static byte[] Combine(byte[] first, byte[] second)
         {
             byte[] ret = new byte[first.Length + second.Length];
@@ -154,5 +164,6 @@ namespace OpticalStageControl
 
             return ret;
         }
+        #endregion
     }
 }

@@ -422,12 +422,13 @@ namespace OpticalStageControl
             // btTest
             // 
             this.btTest.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btTest.Location = new System.Drawing.Point(631, 36);
+            this.btTest.Location = new System.Drawing.Point(636, 4);
             this.btTest.Name = "btTest";
             this.btTest.Size = new System.Drawing.Size(52, 24);
             this.btTest.TabIndex = 6;
             this.btTest.Text = "Test";
             this.btTest.UseVisualStyleBackColor = true;
+            this.btTest.Visible = false;
             this.btTest.Click += new System.EventHandler(this.btTest_Click);
             // 
             // menuStrip1
@@ -481,11 +482,13 @@ namespace OpticalStageControl
             this.Controls.Add(this.cbSerial);
             this.Controls.Add(this.menuStrip1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "OpticalStageControl";
             this.Text = "Optical Stage Control";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.OpticalStageControl_KeyDown);
             this.pnDevice.ResumeLayout(false);
             this.pnDevice.PerformLayout();
             this.gbBtnCtrl.ResumeLayout(false);

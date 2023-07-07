@@ -19,6 +19,8 @@ namespace OpticalStageControl
             InitializeComponent();
             Presenter = new StagePresenter();
             Presenter.AddView(this);
+
+            menuStrip1.Visible = false;
         }
 
         // Detect USB Device plug in/removal and refresh COM list
@@ -199,6 +201,17 @@ namespace OpticalStageControl
 
             SerialTester serialTester = new SerialTester(Presenter);
             serialTester.Show();
+        }
+
+        private void OpticalStageControl_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Alt && (e.KeyCode == Keys.T))
+            {
+                menuStrip1.Visible = (menuStrip1.Visible ? false : true);
+                btTest.Visible = (btTest.Visible ? false : true);
+            }
+
+            e.Handled = true;
         }
     }
 }

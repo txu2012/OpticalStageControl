@@ -5,6 +5,13 @@ VisualStudioVersion = 16.0.33328.57
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpticalStageControl", "OpticalStageControl\OpticalStageControl.csproj", "{576943EB-A072-4E69-B8F8-ED390FDB7CB8}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MotorControlFirmware", "MotorControlFirmware", "{270EC061-8BD3-4B35-AA0E-23CFB6C4C56D}"
+	ProjectSection(SolutionItems) = preProject
+		MotorControlFirmware\Command.ino = MotorControlFirmware\Command.ino
+		MotorControlFirmware\Motor.ino = MotorControlFirmware\Motor.ino
+		MotorControlFirmware\MotorControlFirmware.ino = MotorControlFirmware\MotorControlFirmware.ino
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
