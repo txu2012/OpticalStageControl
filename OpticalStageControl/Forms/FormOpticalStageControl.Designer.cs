@@ -63,6 +63,7 @@ namespace OpticalStageControl
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.otherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.serialTesterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.pnDevice.SuspendLayout();
             this.gbBtnCtrl.SuspendLayout();
@@ -435,7 +436,8 @@ namespace OpticalStageControl
             // 
             this.menuStrip1.BackColor = System.Drawing.SystemColors.Control;
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.otherToolStripMenuItem});
+            this.otherToolStripMenuItem,
+            this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(977, 24);
@@ -456,6 +458,13 @@ namespace OpticalStageControl
             this.serialTesterToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.serialTesterToolStripMenuItem.Text = "Serial Tester";
             this.serialTesterToolStripMenuItem.Click += new System.EventHandler(this.serialTesterToolStripMenuItem_Click);
+            // 
+            // helpToolStripMenuItem
+            // 
+            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(52, 20);
+            this.helpToolStripMenuItem.Text = "About";
+            this.helpToolStripMenuItem.Click += new System.EventHandler(this.helpToolStripMenuItem_Click);
             // 
             // pictureBox1
             // 
@@ -541,6 +550,7 @@ namespace OpticalStageControl
         private System.Windows.Forms.ToolStripMenuItem serialTesterToolStripMenuItem;
         private System.Windows.Forms.TextBox tbResponse;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
     }
 }
 

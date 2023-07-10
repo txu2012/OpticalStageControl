@@ -213,5 +213,11 @@ namespace OpticalStageControl
 
             e.Handled = true;
         }
+
+        private void helpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FormAbout version = new FormAbout(Presenter.VersionControl);
+            version.Show();
+        }
     }
 }

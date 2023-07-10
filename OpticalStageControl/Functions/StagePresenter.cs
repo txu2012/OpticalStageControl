@@ -35,6 +35,13 @@ namespace OpticalStageControl
 
     public class StagePresenter : IStagePresenter
     {
+        public double ReleaseVersionControl
+        {
+            get { return (softwareVersion + ((double)firmwareVersion / 100)); }
+        }
+        private int softwareVersion = 0;
+        private int firmwareVersion = 1;
+
         public StagePresenter()
         {
             SerialCom = null;
@@ -126,7 +133,6 @@ namespace OpticalStageControl
         private short[] motor_limit = { 0, 0, 0 };
         private short motor_velocity = 31;
         private bool serialConnected = false;
-        private int firmwareVersion = 1;
         private int retryConnection = 0;
 
         public string CommandDisplay { get; private set; }

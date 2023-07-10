@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using System.IO.Ports;
+using System.Diagnostics;
 
 namespace OpticalStageControl
 {
@@ -85,37 +86,37 @@ namespace OpticalStageControl
             {
                 if (!port.IsOpen)
                     throw new SerialException("Device is not connected.");
-                Console.WriteLine($"byteArr:{BitConverter.ToString(byte_arr)}, length:{byte_arr.Length}");
+                Debug.WriteLine($"byteArr:{BitConverter.ToString(byte_arr)}, length:{byte_arr.Length}");
                 port.Write(byte_arr, 0, byte_arr.Length);
 
                 Thread.Sleep(100);
                 int buffer = port.ReadByte();
 
-                Console.WriteLine($"buffer:{buffer}");
+                Debug.WriteLine($"buffer:{buffer}");
                 if (buffer > 0)
                 {
                     data = new byte[buffer];
                     port.Read(data, 0, buffer);
 
-                    Console.WriteLine($"data:{BitConverter.ToString(data)}");
+                    Debug.WriteLine($"data:{BitConverter.ToString(data)}");
                 }
 
                 if (expected_response_len != 999)
                 {
                     if (buffer != expected_response_len)
-                        throw new SerialException("Response different from expected");
+                        throw new SerialException($"Response different from expected. Expected bytes: {expected_response_len}, received: {buffer}");
                 }
 
                 return data;
             }
             catch(SerialException ex)
             {
-                Console.WriteLine(ex.Message);
+                Debug.WriteLine(ex.Message);
                 return data;
             }
             catch(TimeoutException ex)
             {
-                Console.WriteLine(ex.Message);
+                Debug.WriteLine(ex.Message);
                 return new byte[] { 0xff, 0xfe };
             }
         }
@@ -125,8 +126,8 @@ namespace OpticalStageControl
             List<byte[]> ret = new List<byte[]>();
             ret.Add(new byte[] { 0x01, 0x01 });
             ret.Add(PortWriteReadByte(ret[0], 1));
-            PrintByteArr(ret[1]);
-            
+            Debug.WriteLine(BitConverter.ToString(ret[1]));
+
             return ret;
         }
 
@@ -135,15 +136,9 @@ namespace OpticalStageControl
             List<byte[]> ret = new List<byte[]>();
             ret.Add(new byte[] { 0x01, 0x02 });
             ret.Add(PortWriteReadByte(ret[0], 2));
-            PrintByteArr(ret[1]);
+            Debug.WriteLine(BitConverter.ToString(ret[1]));
 
             return ret[1][1];
-        }
-
-        private void PrintByteArr(byte[] arr)
-        {
-            string hex = BitConverter.ToString(arr);
-            Console.WriteLine(hex);
         }
 
         #region Append Byte Arrays
