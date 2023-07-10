@@ -83,12 +83,13 @@ namespace OpticalStageControl
                 SerialCom.ClosePort();
                 if (fw == 0xfe)
                 {
-                    CommandDisplay = AppendResponse(CommandDisplay, "Connection timed out. Retrying connection.");
                     // If timed out, try a second time. Plugging in the nano may cause a timeout when first connecting.
                     if (retryConnection == 0)
                     {
-                        OpenSerialCom(port_name);
+                        CommandDisplay = AppendResponse(CommandDisplay, "Connection timed out. Retrying connection.");
+
                         retryConnection++;
+                        OpenSerialCom(port_name);
                     }
                 }
                 else
