@@ -216,7 +216,7 @@ namespace OpticalStageControl
 
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FormAbout version = new FormAbout(Presenter.VersionControl);
+            FormAbout version = new FormAbout(Presenter.ReleaseVersionControl);
             version.Show();
         }
     }
