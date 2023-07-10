@@ -78,24 +78,10 @@ namespace OpticalStageControl
             SerialCom.OpenPort();
 
             byte fw = SerialCom.QueryFirmware();
-            if (firmwareVersion != fw)
-            {
-                SerialCom.ClosePort();
-                if (fw == 0xfe)
-                {
-                    // If timed out, try a second time. Plugging in the nano may cause a timeout when first connecting.
-                    if (retryConnection == 0)
-                    {
-                        CommandDisplay = AppendResponse(CommandDisplay, "Connection timed out. Retrying connection.");
+            byte[] board = SerialCom.QueryBoardName();
+            string boardString = Encoding.UTF8.GetString(board, 1, board.Length - 1).Replace("\0","");
 
-                        retryConnection++;
-                        OpenSerialCom(port_name);
-                    }
-                }
-                else
-                    CommandDisplay = AppendResponse(CommandDisplay, "Connection failed.");
-            }
-            else
+            if (firmwareVersion == fw && boardName == boardString)
             {
                 if (SerialCom.PortConnected)
                 {
@@ -108,6 +94,30 @@ namespace OpticalStageControl
                     GetMotorVelocity();
                     retryConnection = 0;
                 }
+            }
+            else
+            {
+                SerialCom.ClosePort();
+                if (boardString != boardName)
+                    CommandDisplay = AppendResponse(CommandDisplay, "Connection timed out. Board Names do not match");
+                else if (fw != firmwareVersion)
+                {
+                    // If timed out, try a second time. Plugging in the nano may cause a timeout when first connecting.
+                    if (fw == 0xfe)
+                    {
+                        if (retryConnection == 0)
+                        {
+                            CommandDisplay = AppendResponse(CommandDisplay, "Connection timed out. Retrying connection.");
+
+                            retryConnection++;
+                            OpenSerialCom(port_name);
+                        }
+                    }
+                    else
+                        CommandDisplay = AppendResponse(CommandDisplay, "Connection timed out. Firmware version do not match");
+                }
+                else
+                    CommandDisplay = AppendResponse(CommandDisplay, "Connection failed.");
             }
             UpdateViewDisplays();
         }
@@ -136,6 +146,7 @@ namespace OpticalStageControl
         private bool serialConnected = false;
         private int retryConnection = 0;
 
+        private string boardName = "NanoStage";
         public string CommandDisplay { get; private set; }
         #endregion
 

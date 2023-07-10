@@ -133,12 +133,21 @@ namespace OpticalStageControl
 
         public byte QueryFirmware()
         {
-            List<byte[]> ret = new List<byte[]>();
-            ret.Add(new byte[] { 0x01, 0x02 });
-            ret.Add(PortWriteReadByte(ret[0], 2));
-            Debug.WriteLine(BitConverter.ToString(ret[1]));
+            byte[] firmware = PortWriteReadByte(new byte[] { 0x01, 0x02 }, 2);
+            Debug.WriteLine(BitConverter.ToString(firmware));
 
-            return ret[1][1];
+            return firmware[1];
+        }
+
+        public byte[] QueryBoardName()
+        {
+            byte[] boardName = PortWriteReadByte(new byte[] { 0x01, 0x03 }, 17);
+            Debug.WriteLine(BitConverter.ToString(boardName));
+
+            string utfString = Encoding.UTF8.GetString(boardName, 1, boardName.Length-1);
+            Debug.WriteLine(utfString);
+
+            return boardName;
         }
 
         #region Append Byte Arrays

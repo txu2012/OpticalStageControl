@@ -39,6 +39,7 @@ namespace OpticalStageControl
             // 
             // btSend
             // 
+            this.btSend.Enabled = false;
             this.btSend.Location = new System.Drawing.Point(282, 6);
             this.btSend.Name = "btSend";
             this.btSend.Size = new System.Drawing.Size(75, 23);
@@ -53,6 +54,8 @@ namespace OpticalStageControl
             this.tbInput.Name = "tbInput";
             this.tbInput.Size = new System.Drawing.Size(273, 20);
             this.tbInput.TabIndex = 1;
+            this.tbInput.TextChanged += new System.EventHandler(this.tbInput_TextChanged);
+            this.tbInput.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbInput_KeyDown);
             // 
             // tbResponse
             // 

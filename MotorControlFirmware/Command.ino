@@ -63,6 +63,19 @@ void ReadCommand()
       }
       break;
     }
+    case 0x03: // Get Board Type
+    {
+      if (sizeBuffer == 1 && serialBufferSize == 1)
+      {
+        byte message[] = {0x00, 'N','a','n','o','S','t','a','g','e','\0','\0','\0','\0','\0','\0','\0'};
+        WriteSerialByte(message, 17);
+      }
+      else
+      {
+        ReturnError();
+      }
+      break;
+    }
     case 0x20: // Motor Homing 
     {
       if (sizeBuffer == 4 && serialBufferSize == 4)
