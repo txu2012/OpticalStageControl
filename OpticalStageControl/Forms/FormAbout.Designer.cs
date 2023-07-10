@@ -36,16 +36,16 @@ namespace OpticalStageControl
             // lbVers
             // 
             this.lbVers.AutoSize = true;
-            this.lbVers.Location = new System.Drawing.Point(135, 46);
+            this.lbVers.Location = new System.Drawing.Point(122, 46);
             this.lbVers.Name = "lbVers";
-            this.lbVers.Size = new System.Drawing.Size(28, 13);
+            this.lbVers.Size = new System.Drawing.Size(43, 13);
             this.lbVers.TabIndex = 3;
-            this.lbVers.Text = "0.00";
+            this.lbVers.Text = "0.00.00";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(39, 46);
+            this.label1.Location = new System.Drawing.Point(26, 46);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(90, 13);
             this.label1.TabIndex = 2;

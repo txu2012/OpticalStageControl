@@ -35,9 +35,9 @@ namespace OpticalStageControl
 
     public class StagePresenter : IStagePresenter
     {
-        public double ReleaseVersionControl
+        public string ReleaseVersionControl
         {
-            get { return (softwareVersion + ((double)firmwareVersion / 100)); }
+            get { return "0.01.0"; }
         }
         private int softwareVersion = 0;
         private int firmwareVersion = 1;

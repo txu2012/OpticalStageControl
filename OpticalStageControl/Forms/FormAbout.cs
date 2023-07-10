@@ -12,10 +12,10 @@ namespace OpticalStageControl
 {
     public partial class FormAbout : Form
     {
-        public FormAbout(double version_num)
+        public FormAbout(string version_num)
         {
             InitializeComponent();
-            lbVers.Text = String.Format("{0:0.00}", version_num);
+            lbVers.Text = version_num;
         }
     }
 }
