@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace OpticalStageControl
 {
@@ -20,12 +21,13 @@ namespace OpticalStageControl
         void OpenSerialCom(string port_name);
         void CloseSerialCom();
         string[] PortList { get; }
-        short[] MotorPosition { get; }
+        double[] MotorPosition { get; }
         short[] MotorLimit { get; }
         short MotorVelocity { get; }
 
-        void HomeMotor(bool center);
-        void MoveMotor(int motor_index, short position);
+        bool Movement { get; }
+        Task HomeMotor(bool center);
+        Task MoveMotor(int motor_index, short position);
         void SetMode(int mode);
 
         void SaveMotorPositions();
@@ -37,15 +39,18 @@ namespace OpticalStageControl
     {
         public string ReleaseVersionControl
         {
-            get { return "0.01.0"; }
+            get { return $"{softwareVersion}.0.0"; }
         }
-        private int softwareVersion = 0;
+        private int softwareVersion = 1;
         private int firmwareVersion = 1;
 
         public StagePresenter()
         {
             SerialCom = null;
+            Conversion = 160;
+            ConvertFlag = true;
             LoadMotorPositions();
+            Movement = false;
         }
 
         private readonly List<IStageView> views = new List<IStageView>();
@@ -98,9 +103,8 @@ namespace OpticalStageControl
             else
             {
                 SerialCom.ClosePort();
-                if (boardString != boardName)
-                    CommandDisplay = AppendResponse(CommandDisplay, "Connection timed out. Board Names do not match");
-                else if (fw != firmwareVersion)
+                
+                if (fw != firmwareVersion)
                 {
                     // If timed out, try a second time. Plugging in the nano may cause a timeout when first connecting.
                     if (fw == 0xfe)
@@ -116,6 +120,8 @@ namespace OpticalStageControl
                     else
                         CommandDisplay = AppendResponse(CommandDisplay, "Connection timed out. Firmware version do not match");
                 }
+                else if (boardString != boardName)
+                    CommandDisplay = AppendResponse(CommandDisplay, "Connection timed out. Board Names do not match");
                 else
                     CommandDisplay = AppendResponse(CommandDisplay, "Connection failed.");
             }
@@ -136,41 +142,91 @@ namespace OpticalStageControl
 
         #region Parameters
         public string[] PortList { get { return SerialCom.PortList; } }
-        public short[] MotorPosition { get { return this.motor_position; } } // { X, Y, Z }
+        public double[] MotorPosition 
+        { 
+            get 
+            {
+                if (ConvertFlag)
+                    return new double[] {
+                        (this.motor_position[0] <= 0) ? 0 : (double)this.motor_position[0] / Conversion,
+                        (this.motor_position[1] <= 0) ? 0 : (double)this.motor_position[1] / Conversion,
+                        (this.motor_position[2] <= 0) ? 0 : (double)this.motor_position[2] / Conversion
+                    };
+                else
+                    return new double[] {
+                        this.motor_position[0],
+                        this.motor_position[1],
+                        this.motor_position[2]
+                    }; 
+            } 
+        } // { X, Y, Z }
+        public double MoveDistance 
+        { 
+            get
+            {
+                if (ConvertFlag)
+                    return (this.move_distance <= 0) ? 0 : this.move_distance / Conversion;
+                else
+                    return this.move_distance;
+            }
+            set
+            {
+                if (ConvertFlag)
+                    this.move_distance = (value > distance_limit / Conversion) ? distance_limit : value * Conversion;
+                else
+                    this.move_distance = (value > distance_limit) ? distance_limit : value;
+            }
+        }
         public short[] MotorLimit { get { return this.motor_limit; } }
         public short MotorVelocity { get { return this.motor_velocity; } }
+        public short Conversion { get; set; }
+        public bool ConvertFlag { get; set; }
 
-        private short[] motor_position = { 0, 0, 0 };
+        public short[] motor_position = { 0, 0, 0 };
         private short[] motor_limit = { 0, 0, 0 };
-        private short motor_velocity = 31;
+        private short motor_velocity = 200;
         private bool serialConnected = false;
         private int retryConnection = 0;
+        private short distance_limit = 20000;
+        public double move_distance = 0;
 
         private string boardName = "NanoStage";
         public string CommandDisplay { get; private set; }
+        public bool Movement { get; private set; }
         #endregion
 
         #region Motor Command
         public MotorCommand Motor { get; private set; }
 
-        public void HomeMotor(bool center)
+        public async Task HomeMotor(bool center)
         {
-            short x_position = 0;
-            short y_position = 0;
-            short z_position = 0;
+            Movement = true;
+            UpdateViewDisplays();
 
-            if (center)
+            await Task.Run(() =>
             {
-                x_position = (short)(motor_limit[0] / 2);
-                y_position = (short)(motor_limit[1] / 2);
-                z_position = (short)(motor_limit[2] / 2);
-            }
+                HomeCommand(0, center);
+                HomeCommand(1, center);
+                HomeCommand(2, center);
+            });
 
-            MoveMotor(0, x_position);
-            MoveMotor(2, z_position);
-            MoveMotor(1, y_position);
+            Movement = false;
+            UpdateViewDisplays();
         }
-        public void MoveMotor(int motor_index, short position)
+        private void HomeCommand(int motor_index, bool center)
+        {
+            double timeout_ms = ((20400 / 250) * 1e3) + 1000;
+            List<byte[]> ret = Motor.HomeMotor(motor_index, center, timeout_ms);
+
+            Movement = false;
+            CommandDisplay = AppendResponse(CommandDisplay, "Command : " + BitConverter.ToString(ret[0]), "Response: " + BitConverter.ToString(ret[1]));
+
+            if (ret[1][0] == 0x00 && ret[1].Length == 3)
+                motor_position[motor_index] = BitConverter.ToInt16(ret[1], 1);
+            else
+                CommandDisplay = AppendResponse(CommandDisplay, "Error Communication");
+        }
+        public async Task MoveMotor(int motor_index, short position)
         {
             if (position < 0 || position > MotorLimit[motor_index])
             {
@@ -178,13 +234,23 @@ namespace OpticalStageControl
                 return;
             };
 
-            List<byte[]> ret = Motor.MoveMotor(motor_index, position);
+            Movement = true;
+            UpdateViewDisplays();
+
+            double timeout_ms = ((Math.Abs(position - MotorPosition[motor_index]) / 250) * 1e3) + 1000;
+
+            //List<byte[]> ret = Motor.MoveMotor(motor_index, position, timeout_ms);
+            var ret = await Task.Run(() => Motor.MoveMotor(motor_index, position, timeout_ms));
+
+            Movement = false;
             CommandDisplay = AppendResponse(CommandDisplay, "Command : " + BitConverter.ToString(ret[0]), "Response: " + BitConverter.ToString(ret[1]));
 
             if (ret[1][0] == 0x00 && ret[1].Length == 3)
                 motor_position[motor_index] = BitConverter.ToInt16(ret[1], 1);
             else
-                CommandDisplay = AppendResponse(CommandDisplay, "Error");
+                CommandDisplay = AppendResponse(CommandDisplay, "Error Communication");
+
+            UpdateViewDisplays();
         }
 
         public void SetMode(int mode)
@@ -259,6 +325,33 @@ namespace OpticalStageControl
         {
             List<byte[]> ret = SerialCom.TestCommand();
             CommandDisplay = AppendResponse(CommandDisplay, "Command : " + BitConverter.ToString(ret[0]), "Response: " + BitConverter.ToString(ret[1]));
+
+            UpdateViewDisplays();
+        }
+
+        public void ResetPositions()
+        {
+            List<byte[]> ret = Motor.SetPosition(0, 0);
+            CommandDisplay = AppendResponse(CommandDisplay, "Command : " + BitConverter.ToString(ret[0]), "Response: " + BitConverter.ToString(ret[1]));
+
+            ret = Motor.SetPosition(1, 0);
+            CommandDisplay = AppendResponse(CommandDisplay, "Command : " + BitConverter.ToString(ret[0]), "Response: " + BitConverter.ToString(ret[1]));
+
+            ret = Motor.SetPosition(2, 0);
+            CommandDisplay = AppendResponse(CommandDisplay, "Command : " + BitConverter.ToString(ret[0]), "Response: " + BitConverter.ToString(ret[1]));
+
+            motor_position[0] = 0;
+            motor_position[1] = 0;
+            motor_position[2] = 0;
+
+            UpdateViewDisplays();
+        }
+
+        public void MeasureLimit()
+        {
+            List<byte[]> ret = Motor.MeasureLimit();
+            CommandDisplay = AppendResponse(CommandDisplay, "Command : " + BitConverter.ToString(ret[0]), "Response: " + BitConverter.ToString(ret[1]));
+            CommandDisplay = AppendResponse(CommandDisplay, "Limit : " + BitConverter.ToInt16(ret[1], 1).ToString());
 
             UpdateViewDisplays();
         }

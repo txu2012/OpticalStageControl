@@ -78,17 +78,17 @@ void ReadCommand()
     }
     case 0x20: // Motor Homing 
     {
-      if (sizeBuffer == 4 && serialBufferSize == 4)
+      if (sizeBuffer == 3 && serialBufferSize == 3)
       {
-        const uint8_t res = 0;//HomeMotor(serialBuffer[1], ByteToInt16(&(serialBuffer[2])));
-        if (res)
+        const uint8_t res = HomeMotor(serialBuffer[1], velocity, serialBuffer[2]);
+        if (res != 0)
         {
           ReturnError(res);
         }
         else
         {
-          byte message[] = { 0x00 };
-          WriteSerialByte(message, 1);
+          byte message[] = { 0x00, lowByte(motorPosition[serialBuffer[1]]), highByte(motorPosition[serialBuffer[1]]) };
+          WriteSerialByte(message, 3);
         }
       }
       else
@@ -101,9 +101,8 @@ void ReadCommand()
     {
       if (sizeBuffer == 4 && serialBufferSize == 4)
       {
-        motorPosition[serialBuffer[1]] = ByteToInt16(&(serialBuffer[2]));
-        const uint8_t res = 0;//MoveMotor(serialBuffer[1], ByteToInt16(&(serialBuffer[2])), ByteToInt16(&(serialBuffer[4])));
-        /*if(res)
+        const uint8_t res = MoveMotor(serialBuffer[1], ByteToInt16(&(serialBuffer[2])), velocity);
+        if(res != 0)
         {
           ReturnError(res);
         }
@@ -111,9 +110,7 @@ void ReadCommand()
         {
           byte message[] = { 0x00, lowByte(motorPosition[serialBuffer[1]]), highByte(motorPosition[serialBuffer[1]]) };
           WriteSerialByte(message, 3);
-        }*/
-        byte message[] = { 0x00, lowByte(motorPosition[serialBuffer[1]]), highByte(motorPosition[serialBuffer[1]]) };
-        WriteSerialByte(message, 3);
+        }
       }
       else
       {
@@ -189,6 +186,27 @@ void ReadCommand()
       {
         byte message[] = { 0x00, lowByte(velocity), highByte(velocity) };
         WriteSerialByte(message, 3); 
+      }
+      else
+      {
+        ReturnError();
+      }
+      break;
+    }
+    case 0x26: // Calculate limit
+    {
+      if (sizeBuffer == 1 && serialBufferSize == 1)
+      {
+        uint8_t res = CalculatePositionLimit();
+        if (res == 0)
+        {
+          byte message[] = { 0x00, lowByte(measuredLimit), highByte(measuredLimit) };
+          WriteSerialByte(message, 3); 
+        }
+        else
+        {
+          ReturnError();
+        }
       }
       else
       {

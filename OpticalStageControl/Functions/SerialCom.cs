@@ -34,42 +34,59 @@ namespace OpticalStageControl
     {
         private SerialPort port;
         public string PortName { get; set; }
-        private int baud = 115200;
         public static string[] PortList { get { return SerialPort.GetPortNames(); } }
         public bool PortConnected { get; set; }
 
         public SerialCom(string port_name) 
         {
             PortName = port_name;
-            this.port = new SerialPort(PortName, 115200, Parity.None, 8);
+            this.port = new SerialPort(PortName, 115200, Parity.None, 8, StopBits.One);
             PortConnected = false;
         }
 
         public void OpenPort()
         {
-            port.Open();
-            port.Encoding = System.Text.Encoding.GetEncoding(28591);
-            port.WriteTimeout = 2000;
-            port.ReadTimeout = 2000;
-            Thread.Sleep(1000);
+            try
+            {
+                port.Open();
+                port.WriteTimeout = 200;
+                port.ReadTimeout = 200;
 
-            if (port.IsOpen)
-                PortConnected = true;
-            
-            if (!PortConnected)
+                if (port.IsOpen)
+                    PortConnected = true;
+
+                if (!PortConnected)
+                    ClosePort();
+            }
+            catch(Exception ex)
+            {
                 ClosePort();
+                Debug.WriteLine("Failed to open.");
+            }
         }
 
         public void ClosePort()
         {
-            if (port != null && port.IsOpen)
+            try
             {
-                port.Close();
-                port = null;
-                PortConnected = false;
+                if (port != null && port.IsOpen)
+                {
+                    port.Close();
+                    port = null;
+                    PortConnected = false;
+                }
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine("Device may have been disconnected.");
             }
         }
-        
+        public void SetTimeout(double timeout)
+        {
+            if ( port.IsOpen)
+                port.ReadTimeout = (int)timeout;
+        }
+
         /***
          * Parameters:
          * @byte_arr              : Command list with parameters sent to the microcontroller
@@ -79,26 +96,22 @@ namespace OpticalStageControl
          * @return                : Array of bytes returned from the microcontroller. 
          *                          Checks first byte as the buffer for the next set of bytes for the response
          */
-        public byte[] PortWriteReadByte(byte[] byte_arr, int expected_response_len = 999)
+        public byte[] PortWriteReadByte(byte[] byte_arr, int expected_response_len = 999, int timeout_ms = 200)
         {
-            byte[] data = new byte[1];
             try
             {
                 if (!port.IsOpen)
                     throw new SerialException("Device is not connected.");
-                Debug.WriteLine($"byteArr:{BitConverter.ToString(byte_arr)}, length:{byte_arr.Length}");
+
+                int orig_timeout = port.ReadTimeout;
+                port.ReadTimeout = timeout_ms;
                 port.Write(byte_arr, 0, byte_arr.Length);
 
-                Thread.Sleep(100);
+                List<byte> bytesRead = new List<byte>();
                 int buffer = port.ReadByte();
-
-                Debug.WriteLine($"buffer:{buffer}");
-                if (buffer > 0)
+                while (bytesRead.Count < buffer)
                 {
-                    data = new byte[buffer];
-                    port.Read(data, 0, buffer);
-
-                    Debug.WriteLine($"data:{BitConverter.ToString(data)}");
+                    bytesRead.Add((byte)port.ReadByte());
                 }
 
                 if (expected_response_len != 999)
@@ -107,12 +120,12 @@ namespace OpticalStageControl
                         throw new SerialException($"Response different from expected. Expected bytes: {expected_response_len}, received: {buffer}");
                 }
 
-                return data;
+                return bytesRead.ToArray();
             }
             catch(SerialException ex)
             {
                 Debug.WriteLine(ex.Message);
-                return data;
+                return new byte[] { 0xff, 0xfe };
             }
             catch(TimeoutException ex)
             {
@@ -126,7 +139,6 @@ namespace OpticalStageControl
             List<byte[]> ret = new List<byte[]>();
             ret.Add(new byte[] { 0x01, 0x01 });
             ret.Add(PortWriteReadByte(ret[0], 1));
-            Debug.WriteLine(BitConverter.ToString(ret[1]));
 
             return ret;
         }
@@ -134,7 +146,6 @@ namespace OpticalStageControl
         public byte QueryFirmware()
         {
             byte[] firmware = PortWriteReadByte(new byte[] { 0x01, 0x02 }, 2);
-            Debug.WriteLine(BitConverter.ToString(firmware));
 
             return firmware[1];
         }
@@ -142,10 +153,7 @@ namespace OpticalStageControl
         public byte[] QueryBoardName()
         {
             byte[] boardName = PortWriteReadByte(new byte[] { 0x01, 0x03 }, 17);
-            Debug.WriteLine(BitConverter.ToString(boardName));
-
             string utfString = Encoding.UTF8.GetString(boardName, 1, boardName.Length-1);
-            Debug.WriteLine(utfString);
 
             return boardName;
         }

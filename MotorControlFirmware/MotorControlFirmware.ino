@@ -3,10 +3,14 @@
 const int PIN_MOTOR_PUL[3] = { 2, 4, 6 };
 const int PIN_MOTOR_DIR[3] = { 3, 5, 7 };
 
-short motorPosition[3] = { 500, 50, 10 };
-short motorPositionLimit[3] = { 1000, 1000, 1000 };
-short velocity = 25;
+const int PIN_PROXIMAL_LIM[3] = { 8, 11, 14 };
+const int PIN_REMOTE_LIM[3] = { 9, 12, 15 };
+const int PIN_ORIGIN[3] = { 10, 17, 16 };
 
+long motorPosition[3] = { 0, 0, 0 };
+long motorPositionLimit[3] = { 18000, 18000, 18000 };
+const short velocity = 250;
+short measuredLimit = 0;
 int serialBufferSize;
 const int MAXLENGTH = 256; 
 byte serialBuffer[MAXLENGTH];
@@ -18,21 +22,22 @@ const int FwVersion = 1;
 uint8_t mode = 0x00;
 
 void setup() {
-  // put your setup code here, to run once:  
-  Serial.begin(115200);
-  Serial.setTimeout(200);
-  
+  // put your setup code here, to run once:    
   for (int i = 0; i < 3; i++)
   {
     pinMode(PIN_MOTOR_PUL[i], OUTPUT);
     pinMode(PIN_MOTOR_DIR[i], OUTPUT);
 
-    digitalWrite(PIN_MOTOR_DIR[i], HIGH);
+    pinMode(PIN_REMOTE_LIM[i], INPUT_PULLUP);
+    pinMode(PIN_PROXIMAL_LIM[i], INPUT_PULLUP);
+    pinMode(PIN_ORIGIN[i], INPUT_PULLUP);
 
-    //motorPosition[i] = 500;
-    //motorHomeStatus[i] = 0x00;
+    digitalWrite(PIN_MOTOR_DIR[i], HIGH);
   }
   pinMode(LED_BUILTIN, OUTPUT); 
+
+  Serial.begin(115200);
+  Serial.setTimeout(200);
 }
 
 void loop() {
@@ -41,11 +46,6 @@ void loop() {
   if (Serial.available() > 0)
   {
     ReadCommand();
-  }
-
-  if (mode == 0x01)
-  {
-    FreerunMoveMotor(velocity);
   }
 }
 

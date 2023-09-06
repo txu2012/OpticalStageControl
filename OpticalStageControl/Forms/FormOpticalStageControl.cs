@@ -14,12 +14,13 @@ namespace OpticalStageControl
     public partial class OpticalStageControl : Form, IStageView
     {
         private StagePresenter Presenter;
+        private bool updating = false;
         public OpticalStageControl()
         {
             InitializeComponent();
             Presenter = new StagePresenter();
             Presenter.AddView(this);
-
+            
             menuStrip1.Visible = false;
         }
 
@@ -72,34 +73,55 @@ namespace OpticalStageControl
 
         public void UpdateDisplay()
         {
+            updating = true;
+
             tbSerial.Text = (Presenter.SerialConnected == true ? Presenter.SerialCom.PortName + ": Connected." : "Disconnected.");
-            tbXAxis.Text = "Limit: " + Presenter.MotorLimit[0] + ", Position: " + Presenter.MotorPosition[0];
-            tbYAxis.Text = "Limit: " + Presenter.MotorLimit[1] + ", Position: " + Presenter.MotorPosition[1];
-            tbZAxis.Text = "Limit: " + Presenter.MotorLimit[2] + ", Position: " + Presenter.MotorPosition[2];
+            tbXAxis.Text = "Limit: " + Presenter.MotorLimit[0] + ", Position: " + Math.Round(Presenter.MotorPosition[0], 2).ToString("0.00");
+            tbYAxis.Text = "Limit: " + Presenter.MotorLimit[1] + ", Position: " + Math.Round(Presenter.MotorPosition[1], 2).ToString("0.00");
+            tbZAxis.Text = "Limit: " + Presenter.MotorLimit[2] + ", Position: " + Math.Round(Presenter.MotorPosition[2], 2).ToString("0.00");
 
             if (Presenter.SerialConnected)
             {
                 pnDevice.Enabled = true;
                 btConnect.Enabled = false;
+                btRefresh.Enabled = false;
+                cbSerial.Enabled = false;
                 btDisconnect.Enabled = true;
             }
             else
             {
                 pnDevice.Enabled = false;
                 btConnect.Enabled = true;
+                btRefresh.Enabled = true;
+                cbSerial.Enabled = true;
                 btDisconnect.Enabled = false;
             }
 
-            if (rbBtnCtrl.Checked)
+            if (!Presenter.Movement && Presenter.SerialConnected)
+            {
                 gbBtnCtrl.Enabled = true;
+                btHomeCenter.Enabled = true;
+                btHomeEdge.Enabled = true;
+                btDisconnect.Enabled = true;
+            }
             else
+            {
                 gbBtnCtrl.Enabled = false;
+                btHomeCenter.Enabled = false;
+                btHomeEdge.Enabled = false;
+                btDisconnect.Enabled = false;
+            }
 
             nudVelocity.Value = Presenter.MotorVelocity;
+            nudConversion.Value = Presenter.Conversion;
+            nudDistance.Value = (decimal)Presenter.MoveDistance;
+            cbConvertToMm.Checked = Presenter.ConvertFlag;
 
             tbResponse.Text = Presenter.CommandDisplay;
             tbResponse.SelectionStart = tbResponse.Text.Length;
             tbResponse.ScrollToCaret();
+
+            updating = false;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -139,55 +161,84 @@ namespace OpticalStageControl
         private void btHomeCenter_Click(object sender, EventArgs e)
         {
             Presenter.HomeMotor(true);
-            UpdateDisplay();
         }
 
         private void btHomeEdge_Click(object sender, EventArgs e)
         {
             Presenter.HomeMotor(false);
-            UpdateDisplay();
         }
 
         private void btXLeft_Click(object sender, EventArgs e)
         {
-            Presenter.MoveMotor(0, (short)(Presenter.MotorPosition[0] - nudDistance.Value));
-            UpdateDisplay();
+            Presenter.MoveMotor(0, (short)(Presenter.motor_position[0] - Presenter.move_distance));
         }
 
         private void btXRight_Click(object sender, EventArgs e)
         {
-            Presenter.MoveMotor(0, (short)(Presenter.MotorPosition[0] + nudDistance.Value));
-            UpdateDisplay();
+            Presenter.MoveMotor(0, (short)(Presenter.motor_position[0] + Presenter.move_distance));
         }
 
-        private void btYDown_Click(object sender, EventArgs e)
+        private void btZDown_Click(object sender, EventArgs e)
         {
-            Presenter.MoveMotor(1, (short)(Presenter.MotorPosition[1] - nudDistance.Value));
-            UpdateDisplay();
+            Presenter.MoveMotor(2, (short)(Presenter.motor_position[2] + Presenter.move_distance));
         }
 
-        private void btYUp_Click(object sender, EventArgs e)
+        private void btZUp_Click(object sender, EventArgs e)
         {
-            Presenter.MoveMotor(1, (short)(Presenter.MotorPosition[1] + nudDistance.Value));
-            UpdateDisplay();
+            Presenter.MoveMotor(2, (short)(Presenter.motor_position[2] - Presenter.move_distance));
         }
 
-        private void btZLeft_Click(object sender, EventArgs e)
+        private void btYLeft_Click(object sender, EventArgs e)
         {
-            Presenter.MoveMotor(2, (short)(Presenter.MotorPosition[2] - nudDistance.Value));
-            UpdateDisplay();
+            Presenter.MoveMotor(1, (short)(Presenter.motor_position[1] - Presenter.move_distance));
         }
 
-        private void btZRight_Click(object sender, EventArgs e)
+        private void btYRight_Click(object sender, EventArgs e)
         {
-            Presenter.MoveMotor(2, (short)(Presenter.MotorPosition[2] + nudDistance.Value));
-            UpdateDisplay();
+            Presenter.MoveMotor(1, (short)(Presenter.motor_position[1] + Presenter.move_distance));
         }
 
         private void rbBtnCtrl_CheckedChanged(object sender, EventArgs e)
         {
             Presenter.SetMode(rbBtnCtrl.Checked == true ? 0 : 1);
             UpdateDisplay();
+        }
+
+        private void btLimit_Click(object sender, EventArgs e)
+        {
+            Presenter.MeasureLimit();
+        }
+
+        private void cbConvertToMm_CheckedChanged(object sender, EventArgs e)
+        {
+            if (updating) return;
+            Presenter.ConvertFlag = cbConvertToMm.Checked;
+            UpdateDisplay();
+        }
+
+        private void nudConversion_ValueChanged(object sender, EventArgs e)
+        {
+            if (updating) return;
+            Presenter.Conversion = (short)nudConversion.Value;
+            UpdateDisplay();
+        }
+
+        private void nudDistance_ValueChanged(object sender, EventArgs e)
+        {
+            if (updating) return;
+            Presenter.MoveDistance = (double)nudDistance.Value;
+            UpdateDisplay();
+        }
+        private void nudDistance_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 13)
+            {
+                if (updating) return;
+                Presenter.MoveDistance = (double)nudDistance.Value;
+                UpdateDisplay();
+                
+                e.Handled = true;
+            }
         }
         #endregion
 
@@ -208,7 +259,13 @@ namespace OpticalStageControl
             if (e.Alt && (e.KeyCode == Keys.T))
             {
                 menuStrip1.Visible = (menuStrip1.Visible ? false : true);
-                btTest.Visible = (btTest.Visible ? false : true);
+
+                if (Presenter.SerialConnected)
+                {
+                    btTest.Visible = (btTest.Visible ? false : true);
+                    btLimit.Visible = (btLimit.Visible ? false : true);
+                    btReset.Visible = (btReset.Visible ? false : true);
+                }
             }
 
             e.Handled = true;
@@ -218,6 +275,12 @@ namespace OpticalStageControl
         {
             FormAbout version = new FormAbout(Presenter.ReleaseVersionControl);
             version.Show();
+        }
+
+        private void btReset_Click(object sender, EventArgs e)
+        {
+            if (updating) return;
+            Presenter.ResetPositions();
         }
     }
 }

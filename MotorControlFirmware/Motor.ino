@@ -23,30 +23,41 @@ void ApplyDelay(long delay_us)
   }
 }
 
-bool HomeMotor(int motor, short target_velocity)
+bool CheckMotorLimit(int motor, short motor_position)
 {
-  //motorHomeStatus[motor] = 0x01;
-  
+  if (motor_position < 0 || motor_position > motorPositionLimit[motor])
+    return false;
+
   return true;
 }
 
-uint8_t MoveMotor(int motor, int motor_direction, short motor_position, short target_velocity)
+uint8_t CalculatePositionLimit()
 {
-  // Check if position, motor index and target velocity are within supported values
-  if (motor > 2)
-  {
-    return 0xff;
-  }
+  // Move To Start
+  digitalWrite(PIN_MOTOR_DIR[0], LOW);
+  MoveToLimit(0, PIN_ORIGIN[0], HIGH, velocity);
 
-  digitalWrite(PIN_MOTOR_DIR[motor], motor_direction);
+  // Move To End and start counting
+  digitalWrite(PIN_MOTOR_DIR[0], HIGH);
+  measuredLimit = MoveToLimit(0, PIN_REMOTE_LIM[0], LOW, velocity);
+
+  // Move back to start
+  digitalWrite(PIN_MOTOR_DIR[0], LOW);
+  MoveToLimit(0, PIN_ORIGIN[0], HIGH, velocity);
+
+  return 0;
+}
+
+short MoveToLimit(int motor, int limit_sensor, uint8_t polarity, short target_velocity)
+{
+  short position_num = 0;
   
-  // Get amount of steps to move 
-  short move_steps = motorPosition[motor] - motor_position;
   unsigned long pulse_duration = (1e6/target_velocity);
   unsigned long base_time_us = micros();
   unsigned long pulse_dur_us = 0;
-  
-  for (short i = 0; i < abs(move_steps); i++)
+
+  // While the sensor has not been activated, increment motor
+  while(digitalRead(limit_sensor) != polarity)
   {
     unsigned long pulse_dur_target_us = CalcPulseDur(pulse_duration, pulse_dur_us, base_time_us);
     
@@ -55,6 +66,67 @@ uint8_t MoveMotor(int motor, int motor_direction, short motor_position, short ta
     digitalWrite(PIN_MOTOR_PUL[motor], LOW);
     ApplyDelay(pulse_dur_target_us/2);
 
+    position_num = position_num + 1;
+  }
+
+  return position_num;
+}
+
+uint8_t HomeMotor(int motor, short target_velocity, bool center)
+{
+  if (center)
+  {
+    return MoveMotor(motor, motorPositionLimit[motor] / 2, target_velocity);
+  }
+  else
+  {
+    digitalWrite(PIN_MOTOR_DIR[motor], LOW);
+    MoveToLimit(motor, PIN_ORIGIN[motor], HIGH, velocity);
+    motorPosition[motor] = 0;
+    return 0;
+  }
+}
+
+uint8_t MoveMotor(int motor, short motor_position, short target_velocity)
+{
+  // Check if position, motor index and target velocity are within supported values
+  if (motor > 2 ||
+      !CheckMotorLimit(motor, motor_position))
+  {
+    return 0xff;
+  }
+  
+  if (motor_position > motorPosition[motor])
+  {
+    digitalWrite(PIN_MOTOR_DIR[motor], HIGH);
+  }
+  else
+  {
+    digitalWrite(PIN_MOTOR_DIR[motor], LOW);
+  }
+
+  // Currently on the optical stage, the proximal limit switch has been giving false readings of being pushed. Using origin sensor
+  // in replace of the proximal sensor for now.
+  uint8_t lim_pin = (digitalRead(PIN_MOTOR_DIR[motor]) == HIGH) ? PIN_REMOTE_LIM[motor] : PIN_ORIGIN[motor];
+  uint8_t polarity = (digitalRead(PIN_MOTOR_DIR[motor]) == HIGH) ? LOW : HIGH;
+
+  // Get amount of steps to move 
+  short move_steps = motorPosition[motor] - motor_position;
+  unsigned long pulse_duration = (1e6/target_velocity);
+  unsigned long base_time_us = micros();
+  unsigned long pulse_dur_us = 0;
+  
+  for (int i = 0; i < abs(move_steps); i++)
+  {
+    if (digitalRead(lim_pin) == polarity)
+      break;
+    unsigned long pulse_dur_target_us = CalcPulseDur(pulse_duration, pulse_dur_us, base_time_us);
+    
+    digitalWrite(PIN_MOTOR_PUL[motor], HIGH);
+    ApplyDelay(pulse_dur_target_us/2);
+    digitalWrite(PIN_MOTOR_PUL[motor], LOW);
+    ApplyDelay(pulse_dur_target_us/2);
+    
     if (digitalRead(PIN_MOTOR_DIR[motor]) == HIGH)
     {
       motorPosition[motor] = motorPosition[motor] + 1;
@@ -67,11 +139,22 @@ uint8_t MoveMotor(int motor, int motor_direction, short motor_position, short ta
   return 0;
 }
 
-uint8_t FreerunMoveMotor(short target_velocity)
+/*uint8_t FreerunMoveMotor(short target_velocity)
 {
   unsigned long pulse_duration = (1e6/target_velocity);
   
-  if (analogRead(A0) < 400)
+  if (analogRead(A3) < 400 && CheckMotorLimit(0, motorPosition[0]-1))
+  {
+    digitalWrite(PIN_MOTOR_DIR[0], LOW);
+  
+    digitalWrite(PIN_MOTOR_PUL[0], HIGH);
+    ApplyDelay(pulse_duration/2);
+    digitalWrite(PIN_MOTOR_PUL[0], LOW);
+    ApplyDelay(pulse_duration/2);
+
+    motorPosition[0] = motorPosition[0] - 1;
+  }
+  else if (analogRead(A3) > 600 && CheckMotorLimit(0, motorPosition[0]+1))
   {
     digitalWrite(PIN_MOTOR_DIR[0], HIGH);
     
@@ -79,50 +162,57 @@ uint8_t FreerunMoveMotor(short target_velocity)
     ApplyDelay(pulse_duration/2);
     digitalWrite(PIN_MOTOR_PUL[0], LOW);
     ApplyDelay(pulse_duration/2);
+
+    motorPosition[0] = motorPosition[0] + 1;
   }
-  else if (analogRead(A0) > 600)
+  else if (analogRead(A4) < 400 && CheckMotorLimit(1, motorPosition[1]-1))
   {
-    digitalWrite(PIN_MOTOR_DIR[0], LOW);
     
-    digitalWrite(PIN_MOTOR_PUL[0], HIGH);
-    ApplyDelay(pulse_duration/2);
-    digitalWrite(PIN_MOTOR_PUL[0], LOW);
-    ApplyDelay(pulse_duration/2);
-  }
-  else if (analogRead(A1) < 400)
-  {
-    digitalWrite(PIN_MOTOR_DIR[1], HIGH);
-    
-    digitalWrite(PIN_MOTOR_PUL[1], HIGH);
-    ApplyDelay(pulse_duration/2);
-    digitalWrite(PIN_MOTOR_PUL[1], LOW);
-    ApplyDelay(pulse_duration/2);
-  }
-  else if (analogRead(A1) > 600)
-  {
     digitalWrite(PIN_MOTOR_DIR[1], LOW);
     
     digitalWrite(PIN_MOTOR_PUL[1], HIGH);
     ApplyDelay(pulse_duration/2);
     digitalWrite(PIN_MOTOR_PUL[1], LOW);
     ApplyDelay(pulse_duration/2);
+
+    motorPosition[1] = motorPosition[1] - 1;
   }
-  else if (analogRead(A2) < 400)
+  else if (analogRead(A4) > 600 && CheckMotorLimit(1, motorPosition[1]+1))
   {
-    digitalWrite(PIN_MOTOR_DIR[2], HIGH);
     
-    digitalWrite(PIN_MOTOR_PUL[2], HIGH);
+    digitalWrite(PIN_MOTOR_DIR[1], HIGH);
+    
+    digitalWrite(PIN_MOTOR_PUL[1], HIGH);
     ApplyDelay(pulse_duration/2);
-    digitalWrite(PIN_MOTOR_PUL[2], LOW);
+    digitalWrite(PIN_MOTOR_PUL[1], LOW);
     ApplyDelay(pulse_duration/2);
+
+    motorPosition[1] = motorPosition[1] + 1;
   }
-  else if (analogRead(A2) > 600)
+  else if (analogRead(A5) < 400 && CheckMotorLimit(2, motorPosition[2]-1))
   {
+    
     digitalWrite(PIN_MOTOR_DIR[2], LOW);
     
     digitalWrite(PIN_MOTOR_PUL[2], HIGH);
     ApplyDelay(pulse_duration/2);
     digitalWrite(PIN_MOTOR_PUL[2], LOW);
     ApplyDelay(pulse_duration/2);
+
+    motorPosition[2] = motorPosition[2] - 1;
   }
-}
+  else if (analogRead(A5) > 600  && CheckMotorLimit(2, motorPosition[2]+1))
+  {
+    
+    digitalWrite(PIN_MOTOR_DIR[2], HIGH);
+    
+    digitalWrite(PIN_MOTOR_PUL[2], HIGH);
+    ApplyDelay(pulse_duration/2);
+    digitalWrite(PIN_MOTOR_PUL[2], LOW);
+    ApplyDelay(pulse_duration/2);
+
+    motorPosition[2] = motorPosition[2] + 1;
+  }
+
+  return 0;
+}*/

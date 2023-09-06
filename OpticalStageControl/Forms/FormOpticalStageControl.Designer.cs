@@ -36,24 +36,29 @@ namespace OpticalStageControl
             this.btDisconnect = new System.Windows.Forms.Button();
             this.btRefresh = new System.Windows.Forms.Button();
             this.pnDevice = new System.Windows.Forms.Panel();
+            this.btReset = new System.Windows.Forms.Button();
+            this.btLimit = new System.Windows.Forms.Button();
             this.tbResponse = new System.Windows.Forms.TextBox();
             this.gbBtnCtrl = new System.Windows.Forms.GroupBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.nudConversion = new System.Windows.Forms.NumericUpDown();
+            this.cbConvertToMm = new System.Windows.Forms.CheckBox();
             this.tbXAxis = new System.Windows.Forms.TextBox();
-            this.tbZAxis = new System.Windows.Forms.TextBox();
-            this.btZLeft = new System.Windows.Forms.Button();
-            this.label5 = new System.Windows.Forms.Label();
-            this.btYDown = new System.Windows.Forms.Button();
             this.tbYAxis = new System.Windows.Forms.TextBox();
+            this.btYLeft = new System.Windows.Forms.Button();
+            this.label5 = new System.Windows.Forms.Label();
+            this.btZDown = new System.Windows.Forms.Button();
+            this.tbZAxis = new System.Windows.Forms.TextBox();
             this.btXLeft = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.btXRight = new System.Windows.Forms.Button();
             this.nudDistance = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.btZRight = new System.Windows.Forms.Button();
+            this.btYRight = new System.Windows.Forms.Button();
             this.nudVelocity = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
-            this.btYUp = new System.Windows.Forms.Button();
+            this.btZUp = new System.Windows.Forms.Button();
             this.gbMode = new System.Windows.Forms.GroupBox();
             this.rbJoystick = new System.Windows.Forms.RadioButton();
             this.rbBtnCtrl = new System.Windows.Forms.RadioButton();
@@ -64,14 +69,13 @@ namespace OpticalStageControl
             this.otherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.serialTesterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.pnDevice.SuspendLayout();
             this.gbBtnCtrl.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nudConversion)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudDistance)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudVelocity)).BeginInit();
             this.gbMode.SuspendLayout();
             this.menuStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // cbSerial
@@ -130,16 +134,42 @@ namespace OpticalStageControl
             // pnDevice
             // 
             this.pnDevice.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnDevice.Controls.Add(this.btReset);
+            this.pnDevice.Controls.Add(this.btLimit);
             this.pnDevice.Controls.Add(this.tbResponse);
             this.pnDevice.Controls.Add(this.gbBtnCtrl);
             this.pnDevice.Controls.Add(this.gbMode);
             this.pnDevice.Controls.Add(this.btHomeEdge);
             this.pnDevice.Controls.Add(this.btHomeCenter);
             this.pnDevice.Controls.Add(this.btTest);
-            this.pnDevice.Location = new System.Drawing.Point(3, 75);
+            this.pnDevice.Location = new System.Drawing.Point(3, 67);
             this.pnDevice.Name = "pnDevice";
-            this.pnDevice.Size = new System.Drawing.Size(968, 405);
+            this.pnDevice.Size = new System.Drawing.Size(968, 413);
             this.pnDevice.TabIndex = 5;
+            // 
+            // btReset
+            // 
+            this.btReset.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btReset.Location = new System.Drawing.Point(636, 62);
+            this.btReset.Name = "btReset";
+            this.btReset.Size = new System.Drawing.Size(52, 24);
+            this.btReset.TabIndex = 26;
+            this.btReset.Text = "Reset";
+            this.btReset.UseVisualStyleBackColor = true;
+            this.btReset.Visible = false;
+            this.btReset.Click += new System.EventHandler(this.btReset_Click);
+            // 
+            // btLimit
+            // 
+            this.btLimit.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btLimit.Location = new System.Drawing.Point(636, 32);
+            this.btLimit.Name = "btLimit";
+            this.btLimit.Size = new System.Drawing.Size(52, 24);
+            this.btLimit.TabIndex = 25;
+            this.btLimit.Text = "Limit";
+            this.btLimit.UseVisualStyleBackColor = true;
+            this.btLimit.Visible = false;
+            this.btLimit.Click += new System.EventHandler(this.btLimit_Click);
             // 
             // tbResponse
             // 
@@ -149,34 +179,79 @@ namespace OpticalStageControl
             this.tbResponse.Name = "tbResponse";
             this.tbResponse.ReadOnly = true;
             this.tbResponse.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.tbResponse.Size = new System.Drawing.Size(271, 394);
+            this.tbResponse.Size = new System.Drawing.Size(271, 404);
             this.tbResponse.TabIndex = 24;
             // 
             // gbBtnCtrl
             // 
+            this.gbBtnCtrl.Controls.Add(this.label6);
+            this.gbBtnCtrl.Controls.Add(this.nudConversion);
+            this.gbBtnCtrl.Controls.Add(this.cbConvertToMm);
             this.gbBtnCtrl.Controls.Add(this.tbXAxis);
-            this.gbBtnCtrl.Controls.Add(this.tbZAxis);
-            this.gbBtnCtrl.Controls.Add(this.btZLeft);
-            this.gbBtnCtrl.Controls.Add(this.label5);
-            this.gbBtnCtrl.Controls.Add(this.btYDown);
             this.gbBtnCtrl.Controls.Add(this.tbYAxis);
+            this.gbBtnCtrl.Controls.Add(this.btYLeft);
+            this.gbBtnCtrl.Controls.Add(this.label5);
+            this.gbBtnCtrl.Controls.Add(this.btZDown);
+            this.gbBtnCtrl.Controls.Add(this.tbZAxis);
             this.gbBtnCtrl.Controls.Add(this.btXLeft);
             this.gbBtnCtrl.Controls.Add(this.label4);
             this.gbBtnCtrl.Controls.Add(this.btXRight);
             this.gbBtnCtrl.Controls.Add(this.nudDistance);
             this.gbBtnCtrl.Controls.Add(this.label2);
             this.gbBtnCtrl.Controls.Add(this.label3);
-            this.gbBtnCtrl.Controls.Add(this.btZRight);
+            this.gbBtnCtrl.Controls.Add(this.btYRight);
             this.gbBtnCtrl.Controls.Add(this.nudVelocity);
             this.gbBtnCtrl.Controls.Add(this.label1);
-            this.gbBtnCtrl.Controls.Add(this.btYUp);
+            this.gbBtnCtrl.Controls.Add(this.btZUp);
             this.gbBtnCtrl.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.gbBtnCtrl.Location = new System.Drawing.Point(3, 72);
+            this.gbBtnCtrl.Location = new System.Drawing.Point(3, 95);
             this.gbBtnCtrl.Name = "gbBtnCtrl";
-            this.gbBtnCtrl.Size = new System.Drawing.Size(685, 328);
+            this.gbBtnCtrl.Size = new System.Drawing.Size(685, 313);
             this.gbBtnCtrl.TabIndex = 6;
             this.gbBtnCtrl.TabStop = false;
             this.gbBtnCtrl.Text = "Button Control";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(609, 15);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(68, 17);
+            this.label6.TabIndex = 23;
+            this.label6.Text = "steps/mm";
+            // 
+            // nudConversion
+            // 
+            this.nudConversion.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.nudConversion.Enabled = false;
+            this.nudConversion.Location = new System.Drawing.Point(557, 12);
+            this.nudConversion.Maximum = new decimal(new int[] {
+            20000,
+            0,
+            0,
+            0});
+            this.nudConversion.Name = "nudConversion";
+            this.nudConversion.Size = new System.Drawing.Size(49, 23);
+            this.nudConversion.TabIndex = 22;
+            this.nudConversion.Value = new decimal(new int[] {
+            160,
+            0,
+            0,
+            0});
+            this.nudConversion.ValueChanged += new System.EventHandler(this.nudConversion_ValueChanged);
+            // 
+            // cbConvertToMm
+            // 
+            this.cbConvertToMm.AutoSize = true;
+            this.cbConvertToMm.Checked = true;
+            this.cbConvertToMm.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbConvertToMm.Location = new System.Drawing.Point(459, 12);
+            this.cbConvertToMm.Name = "cbConvertToMm";
+            this.cbConvertToMm.Size = new System.Drawing.Size(102, 21);
+            this.cbConvertToMm.TabIndex = 21;
+            this.cbConvertToMm.Text = "mm Convert";
+            this.cbConvertToMm.UseVisualStyleBackColor = true;
+            this.cbConvertToMm.CheckedChanged += new System.EventHandler(this.cbConvertToMm_CheckedChanged);
             // 
             // tbXAxis
             // 
@@ -188,26 +263,26 @@ namespace OpticalStageControl
             this.tbXAxis.Size = new System.Drawing.Size(283, 29);
             this.tbXAxis.TabIndex = 6;
             // 
-            // tbZAxis
+            // tbYAxis
             // 
-            this.tbZAxis.BackColor = System.Drawing.SystemColors.ActiveCaption;
-            this.tbZAxis.Enabled = false;
-            this.tbZAxis.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbZAxis.Location = new System.Drawing.Point(122, 184);
-            this.tbZAxis.Name = "tbZAxis";
-            this.tbZAxis.Size = new System.Drawing.Size(283, 29);
-            this.tbZAxis.TabIndex = 7;
+            this.tbYAxis.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.tbYAxis.Enabled = false;
+            this.tbYAxis.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbYAxis.Location = new System.Drawing.Point(122, 184);
+            this.tbYAxis.Name = "tbYAxis";
+            this.tbYAxis.Size = new System.Drawing.Size(283, 29);
+            this.tbYAxis.TabIndex = 7;
             // 
-            // btZLeft
+            // btYLeft
             // 
-            this.btZLeft.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btZLeft.Location = new System.Drawing.Point(439, 176);
-            this.btZLeft.Name = "btZLeft";
-            this.btZLeft.Size = new System.Drawing.Size(81, 50);
-            this.btZLeft.TabIndex = 13;
-            this.btZLeft.Text = "<<";
-            this.btZLeft.UseVisualStyleBackColor = true;
-            this.btZLeft.Click += new System.EventHandler(this.btZLeft_Click);
+            this.btYLeft.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btYLeft.Location = new System.Drawing.Point(439, 176);
+            this.btYLeft.Name = "btYLeft";
+            this.btYLeft.Size = new System.Drawing.Size(81, 50);
+            this.btYLeft.TabIndex = 13;
+            this.btYLeft.Text = "<<";
+            this.btYLeft.UseVisualStyleBackColor = true;
+            this.btYLeft.Click += new System.EventHandler(this.btYLeft_Click);
             // 
             // label5
             // 
@@ -217,28 +292,28 @@ namespace OpticalStageControl
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(63, 24);
             this.label5.TabIndex = 20;
-            this.label5.Text = "Z Axis";
+            this.label5.Text = "Y Axis";
             // 
-            // btYDown
+            // btZDown
             // 
-            this.btYDown.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btYDown.Location = new System.Drawing.Point(439, 256);
-            this.btYDown.Name = "btYDown";
-            this.btYDown.Size = new System.Drawing.Size(81, 50);
-            this.btYDown.TabIndex = 14;
-            this.btYDown.Text = "Dn";
-            this.btYDown.UseVisualStyleBackColor = true;
-            this.btYDown.Click += new System.EventHandler(this.btYDown_Click);
+            this.btZDown.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btZDown.Location = new System.Drawing.Point(439, 256);
+            this.btZDown.Name = "btZDown";
+            this.btZDown.Size = new System.Drawing.Size(81, 50);
+            this.btZDown.TabIndex = 14;
+            this.btZDown.Text = "Dn";
+            this.btZDown.UseVisualStyleBackColor = true;
+            this.btZDown.Click += new System.EventHandler(this.btZDown_Click);
             // 
-            // tbYAxis
+            // tbZAxis
             // 
-            this.tbYAxis.BackColor = System.Drawing.SystemColors.ActiveCaption;
-            this.tbYAxis.Enabled = false;
-            this.tbYAxis.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbYAxis.Location = new System.Drawing.Point(122, 264);
-            this.tbYAxis.Name = "tbYAxis";
-            this.tbYAxis.Size = new System.Drawing.Size(283, 29);
-            this.tbYAxis.TabIndex = 8;
+            this.tbZAxis.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.tbZAxis.Enabled = false;
+            this.tbZAxis.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbZAxis.Location = new System.Drawing.Point(122, 264);
+            this.tbZAxis.Name = "tbZAxis";
+            this.tbZAxis.Size = new System.Drawing.Size(283, 29);
+            this.tbZAxis.TabIndex = 8;
             // 
             // btXLeft
             // 
@@ -259,7 +334,7 @@ namespace OpticalStageControl
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(63, 24);
             this.label4.TabIndex = 19;
-            this.label4.Text = "Y Axis";
+            this.label4.Text = "Z Axis";
             // 
             // btXRight
             // 
@@ -274,10 +349,16 @@ namespace OpticalStageControl
             // 
             // nudDistance
             // 
+            this.nudDistance.DecimalPlaces = 2;
             this.nudDistance.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.nudDistance.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
             this.nudDistance.Location = new System.Drawing.Point(557, 37);
             this.nudDistance.Maximum = new decimal(new int[] {
-            1000,
+            20000,
             0,
             0,
             0});
@@ -285,6 +366,8 @@ namespace OpticalStageControl
             this.nudDistance.Size = new System.Drawing.Size(91, 29);
             this.nudDistance.TabIndex = 9;
             this.nudDistance.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.nudDistance.ValueChanged += new System.EventHandler(this.nudDistance_ValueChanged);
+            this.nudDistance.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.nudDistance_KeyPress);
             // 
             // label2
             // 
@@ -307,16 +390,16 @@ namespace OpticalStageControl
             this.label3.TabIndex = 18;
             this.label3.Text = "X Axis";
             // 
-            // btZRight
+            // btYRight
             // 
-            this.btZRight.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btZRight.Location = new System.Drawing.Point(567, 176);
-            this.btZRight.Name = "btZRight";
-            this.btZRight.Size = new System.Drawing.Size(81, 50);
-            this.btZRight.TabIndex = 16;
-            this.btZRight.Text = ">>";
-            this.btZRight.UseVisualStyleBackColor = true;
-            this.btZRight.Click += new System.EventHandler(this.btZRight_Click);
+            this.btYRight.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btYRight.Location = new System.Drawing.Point(567, 176);
+            this.btYRight.Name = "btYRight";
+            this.btYRight.Size = new System.Drawing.Size(81, 50);
+            this.btYRight.TabIndex = 16;
+            this.btYRight.Text = ">>";
+            this.btYRight.UseVisualStyleBackColor = true;
+            this.btYRight.Click += new System.EventHandler(this.btYRight_Click);
             // 
             // nudVelocity
             // 
@@ -325,7 +408,7 @@ namespace OpticalStageControl
             this.nudVelocity.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.nudVelocity.Location = new System.Drawing.Point(256, 37);
             this.nudVelocity.Maximum = new decimal(new int[] {
-            200,
+            2000,
             0,
             0,
             0});
@@ -334,7 +417,7 @@ namespace OpticalStageControl
             this.nudVelocity.TabIndex = 10;
             this.nudVelocity.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.nudVelocity.Value = new decimal(new int[] {
-            31,
+            250,
             0,
             0,
             0});
@@ -349,21 +432,22 @@ namespace OpticalStageControl
             this.label1.TabIndex = 11;
             this.label1.Text = "Steps (Distance)";
             // 
-            // btYUp
+            // btZUp
             // 
-            this.btYUp.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btYUp.Location = new System.Drawing.Point(567, 256);
-            this.btYUp.Name = "btYUp";
-            this.btYUp.Size = new System.Drawing.Size(81, 50);
-            this.btYUp.TabIndex = 17;
-            this.btYUp.Text = "Up";
-            this.btYUp.UseVisualStyleBackColor = true;
-            this.btYUp.Click += new System.EventHandler(this.btYUp_Click);
+            this.btZUp.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btZUp.Location = new System.Drawing.Point(567, 256);
+            this.btZUp.Name = "btZUp";
+            this.btZUp.Size = new System.Drawing.Size(81, 50);
+            this.btZUp.TabIndex = 17;
+            this.btZUp.Text = "Up";
+            this.btZUp.UseVisualStyleBackColor = true;
+            this.btZUp.Click += new System.EventHandler(this.btZUp_Click);
             // 
             // gbMode
             // 
             this.gbMode.Controls.Add(this.rbJoystick);
             this.gbMode.Controls.Add(this.rbBtnCtrl);
+            this.gbMode.Enabled = false;
             this.gbMode.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.gbMode.Location = new System.Drawing.Point(356, 16);
             this.gbMode.Name = "gbMode";
@@ -466,23 +550,11 @@ namespace OpticalStageControl
             this.helpToolStripMenuItem.Text = "About";
             this.helpToolStripMenuItem.Click += new System.EventHandler(this.helpToolStripMenuItem_Click);
             // 
-            // pictureBox1
-            // 
-            this.pictureBox1.ErrorImage = null;
-            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.InitialImage = null;
-            this.pictureBox1.Location = new System.Drawing.Point(921, 28);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(50, 44);
-            this.pictureBox1.TabIndex = 7;
-            this.pictureBox1.TabStop = false;
-            // 
             // OpticalStageControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(977, 485);
-            this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.pnDevice);
             this.Controls.Add(this.btRefresh);
             this.Controls.Add(this.btDisconnect);
@@ -491,8 +563,10 @@ namespace OpticalStageControl
             this.Controls.Add(this.cbSerial);
             this.Controls.Add(this.menuStrip1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip1;
+            this.MaximizeBox = false;
             this.Name = "OpticalStageControl";
             this.Text = "Optical Stage Control";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
@@ -502,13 +576,13 @@ namespace OpticalStageControl
             this.pnDevice.PerformLayout();
             this.gbBtnCtrl.ResumeLayout(false);
             this.gbBtnCtrl.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nudConversion)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudDistance)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudVelocity)).EndInit();
             this.gbMode.ResumeLayout(false);
             this.gbMode.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -525,18 +599,18 @@ namespace OpticalStageControl
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Button btYUp;
-        private System.Windows.Forms.Button btZRight;
+        private System.Windows.Forms.Button btZUp;
+        private System.Windows.Forms.Button btYRight;
         private System.Windows.Forms.Button btXRight;
-        private System.Windows.Forms.Button btYDown;
-        private System.Windows.Forms.Button btZLeft;
+        private System.Windows.Forms.Button btZDown;
+        private System.Windows.Forms.Button btYLeft;
         private System.Windows.Forms.Button btXLeft;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.NumericUpDown nudVelocity;
         private System.Windows.Forms.NumericUpDown nudDistance;
-        private System.Windows.Forms.TextBox tbYAxis;
         private System.Windows.Forms.TextBox tbZAxis;
+        private System.Windows.Forms.TextBox tbYAxis;
         private System.Windows.Forms.TextBox tbXAxis;
         private System.Windows.Forms.Button btTest;
         private System.Windows.Forms.RadioButton rbJoystick;
@@ -549,8 +623,12 @@ namespace OpticalStageControl
         private System.Windows.Forms.ToolStripMenuItem otherToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem serialTesterToolStripMenuItem;
         private System.Windows.Forms.TextBox tbResponse;
-        private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
+        private System.Windows.Forms.Button btLimit;
+        private System.Windows.Forms.CheckBox cbConvertToMm;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.NumericUpDown nudConversion;
+        private System.Windows.Forms.Button btReset;
     }
 }
 
