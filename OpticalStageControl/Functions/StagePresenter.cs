@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using SharpDX.DirectInput;
 
 namespace OpticalStageControl
 {
@@ -193,6 +194,8 @@ namespace OpticalStageControl
         private string boardName = "NanoStage";
         public string CommandDisplay { get; private set; }
         public bool Movement { get; private set; }
+
+        private Joystick joystick;
         #endregion
 
         #region Motor Command
@@ -369,6 +372,101 @@ namespace OpticalStageControl
             motor_position[0] = Properties.Settings.Default.XPosition;
             motor_position[1] = Properties.Settings.Default.YPosition;
             motor_position[2] = Properties.Settings.Default.ZPosition;
+        }
+        #endregion
+
+        #region Joystick Functions
+        public void InitializeJoystick()
+        {
+            using (var di = new DirectInput())
+            {
+                // Search for Joystick devices
+                foreach (var device in di.GetDevices(DeviceType.Joystick, DeviceEnumerationFlags.AttachedOnly))
+                {
+                    // Check if GUID matches
+                    if (device.ProductGuid.ToString() == "2003056e-0000-0000-0000-504944564944")
+                    {
+                        Console.WriteLine($"{device.Type} found.");
+                        joystick = new Joystick(di, device.InstanceGuid);
+                        joystick.Properties.BufferSize = 128;
+                        joystick.Acquire();
+                    }
+                }
+            }
+        }
+
+        public void CheckJoystickState()
+        {
+            var current_state = joystick.GetCurrentState();
+            if (current_state != null)
+                CheckButtonPressed(current_state);
+        }
+
+        private void CheckButtonPressed(JoystickState state)
+        {
+            if (state.X > 32767)
+                MoveMotorJs(0, (short)(this.motor_position[0] + 5));
+            else if (state.X < 32767)
+                MoveMotorJs(0, (short)(this.motor_position[0] - 5));
+            else if (state.Y > 32767)
+                MoveMotorJs(1, (short)(this.motor_position[1] + 5));
+            else if (state.Y < 32767)
+                MoveMotorJs(1, (short)(this.motor_position[1] - 5));
+            else if (state.RotationZ < 32767)
+                MoveMotorJs(2, (short)(this.motor_position[2] - 5));
+            else if (state.RotationZ > 32767)
+                MoveMotorJs(2, (short)(this.motor_position[2] + 5));
+        }
+
+        public void MoveMotorJs(int motor_index, short position)
+        {
+            if (position < 0 || position > MotorLimit[motor_index])
+            {
+                CommandDisplay = AppendResponse(CommandDisplay, "Error: Limit will be exceeded.");
+                return;
+            };
+
+            double timeout_ms = ((Math.Abs(position - MotorPosition[motor_index]) / 250) * 1e3) + 1000;
+
+            List<byte[]> ret = Motor.MoveMotor(motor_index, position, timeout_ms);
+            CommandDisplay = AppendResponse(CommandDisplay, "Command : " + BitConverter.ToString(ret[0]), "Response: " + BitConverter.ToString(ret[1]));
+
+            if (ret[1][0] == 0x00 && ret[1].Length == 3)
+                motor_position[motor_index] = BitConverter.ToInt16(ret[1], 1);
+            else
+                CommandDisplay = AppendResponse(CommandDisplay, "Error Communication");
+        }
+
+        public void GetMotorPositions(bool joystick = false)
+        {
+            List<byte[]> ret = Motor.QueryPosition(0);
+            if (!joystick)
+                CommandDisplay = AppendResponse(CommandDisplay, "Command : " + BitConverter.ToString(ret[0]), "Response: " + BitConverter.ToString(ret[1]));
+
+            if (ret[1][0] == 0x00 && ret[1].Length == 3)
+                motor_position[0] = BitConverter.ToInt16(ret[1], 1);
+            else
+                CommandDisplay = AppendResponse(CommandDisplay, "Error");
+
+            ret = Motor.QueryPosition(1);
+            if (!joystick)
+                CommandDisplay = AppendResponse(CommandDisplay, "Command : " + BitConverter.ToString(ret[0]), "Response: " + BitConverter.ToString(ret[1]));
+
+            if (ret[1][0] == 0x00 && ret[1].Length == 3)
+                motor_position[1] = BitConverter.ToInt16(ret[1], 1);
+            else
+                CommandDisplay = AppendResponse(CommandDisplay, "Error");
+
+            ret = Motor.QueryPosition(2);
+            if (!joystick)
+                CommandDisplay = AppendResponse(CommandDisplay, "Command : " + BitConverter.ToString(ret[0]), "Response: " + BitConverter.ToString(ret[1]));
+
+            if (ret[1][0] == 0x00 && ret[1].Length == 3)
+                motor_position[2] = BitConverter.ToInt16(ret[1], 1);
+            else
+                CommandDisplay = AppendResponse(CommandDisplay, "Error");
+
+            UpdateViewDisplays();
         }
         #endregion
     }

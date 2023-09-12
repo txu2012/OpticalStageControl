@@ -29,6 +29,7 @@ namespace OpticalStageControl
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OpticalStageControl));
             this.cbSerial = new System.Windows.Forms.ComboBox();
             this.tbSerial = new System.Windows.Forms.TextBox();
@@ -69,6 +70,7 @@ namespace OpticalStageControl
             this.otherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.serialTesterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.jsTimer = new System.Windows.Forms.Timer(this.components);
             this.pnDevice.SuspendLayout();
             this.gbBtnCtrl.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudConversion)).BeginInit();
@@ -550,6 +552,11 @@ namespace OpticalStageControl
             this.helpToolStripMenuItem.Text = "About";
             this.helpToolStripMenuItem.Click += new System.EventHandler(this.helpToolStripMenuItem_Click);
             // 
+            // jsTimer
+            // 
+            this.jsTimer.Interval = 500;
+            this.jsTimer.Tick += new System.EventHandler(this.jsTimer_Tick);
+            // 
             // OpticalStageControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -629,6 +636,7 @@ namespace OpticalStageControl
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.NumericUpDown nudConversion;
         private System.Windows.Forms.Button btReset;
+        private System.Windows.Forms.Timer jsTimer;
     }
 }
 

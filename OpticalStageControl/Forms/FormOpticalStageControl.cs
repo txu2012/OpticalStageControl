@@ -22,6 +22,7 @@ namespace OpticalStageControl
             Presenter.AddView(this);
             
             menuStrip1.Visible = false;
+            Presenter.InitializeJoystick();
         }
 
         // Detect USB Device plug in/removal and refresh COM list
@@ -144,6 +145,7 @@ namespace OpticalStageControl
                     System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.WaitCursor;
                     Presenter.OpenSerialCom(cbSerial.SelectedItem.ToString());
                     System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Arrow;
+                    jsTimer.Enabled = true;
                 }
             }
         }
@@ -151,6 +153,7 @@ namespace OpticalStageControl
         private void btDisconnect_Click(object sender, EventArgs e)
         {
             Presenter.CloseSerialCom();
+            jsTimer.Enabled = false;
         }
 
         private void btTest_Click(object sender, EventArgs e)
@@ -281,6 +284,13 @@ namespace OpticalStageControl
         {
             if (updating) return;
             Presenter.ResetPositions();
+        }
+
+        private void jsTimer_Tick(object sender, EventArgs e)
+        {
+            Presenter.CheckJoystickState();
+            //Presenter.GetMotorPositions(true);
+            UpdateDisplay();
         }
     }
 }

@@ -19,6 +19,10 @@ namespace OpticalStageControl
             ret.Add(serialCom.PortWriteReadByte(ret[0], 3, (int)timeout_ms));
             return ret;
         }
+        public void MoveMotorJs(int motor_index, short position, double timeout_ms = 200)
+        {
+            serialCom.PortWriteReadByte(SerialCom.Combine(new byte[] { 0x04, 0x41, (byte)motor_index }, BitConverter.GetBytes(position)), 1, (int)timeout_ms);
+        }
         public List<byte[]> HomeMotor(int motor_index, bool center, double timeout_ms = 200)
         {
             List<byte[]> ret = new List<byte[]>();
