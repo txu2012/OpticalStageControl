@@ -1,0 +1,13 @@
+{
+   "MotorPositions": [
+      0,
+      0,
+      0
+   ],
+   "MotorVelocity": 250,
+   "MotorLimits": [
+      18000,
+      18000,
+      18000
+   ]
+}

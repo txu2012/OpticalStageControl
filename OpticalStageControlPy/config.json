@@ -1,10 +1,10 @@
 {
    "MotorPositions": [
-      0,
-      0,
-      0
+      345,
+      170,
+      8
    ],
-   "MotorVelocity": 200,
+   "MotorVelocity": 250,
    "MotorLimits": [
       18000,
       18000,

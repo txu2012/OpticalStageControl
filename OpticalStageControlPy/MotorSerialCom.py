@@ -11,6 +11,8 @@ class Nano:
         self._isConnected = False
         self._version = 1
         self._name = "NanoStage"
+        self._debug_log = True
+        print('Nano object created.')
     
     def __enter__(self):
         return self
@@ -55,20 +57,24 @@ class Nano:
         self._isConnected = False
 
     def check_board(self):
-        error, name = self.QueryBoardName()
-        print(f'error: {error}, name: {name}')
-        if error != 0 or name.rstrip() != self._name:
-            print('Board name does not match.')
+        try:
+            error,_, name = self.QueryBoardName()
+            print(f'error: {error}, name: {name}')
+            if error != 0 or name.rstrip() != self._name:
+                print('Board name does not match.')
+                return False
+            
+            error,_, version = self.QueryBoardVersion()
+            if error != 0 or version != self._version:
+                print('Board version does not match.')
+                return False
+            
+            return True
+        except Exception as ex:
+            print(ex)
             return False
-        
-        error, version = self.QueryBoardVersion()
-        if error != 0 or version != self._version:
-            print('Board version does not match.')
-            return False
-        
-        return True
 
-    def write_read(self, cmd: bytes, expected_size: int, timeout: float = 200) -> Tuple[int, bytes]:        
+    def write_read(self, cmd: bytes, expected_size: int, timeout: float = 2.0) -> Tuple[int, bytes]:        
         print(f'({self._to_hexstr(cmd)}', end='')
         original_timeout = self._ser.timeout
         self._ser.timeout = timeout
@@ -93,30 +99,26 @@ class Nano:
         err = response[1]
         return err, response[1:]
           
-    def QueryBoardVersion(self) -> Tuple[int, int]:
+    def QueryBoardVersion(self) -> Tuple[int, bytes, int]:
         print('\nQueryBoardName')
         
         err,response = self.write_read(b'\x02', 2)    
-        print(f'error code: {err}')   
-        print(f"Response: {response}")
-        print(f'Version: {response[1]}') 
         
-        return err, response[1]
+        self.log_response(err, response, response[1])
+        return err, response, response[1]
             
-    def QueryBoardName(self) -> Tuple[int, str]:
+    def QueryBoardName(self) -> Tuple[int, bytes, str]:
         print('\nQueryBoardName')
         
         err,response = self.write_read(b'\x03', 17)
         
-        print(f'err: {err}')
-        print(f"Response: {response}")
-        
         if err == 0:
             response = response[1:].decode().rstrip('\x00')
         
-        return err, response
+        self.log_response(err, response)
+        return err, response, response
         
-    def HomeMotor(self, motor: bytes, center: bool) -> Tuple[int, int]:
+    def HomeMotor(self, motor: bytes, center: bool) -> Tuple[int, bytes, int]:
         print('\nHomeMotor')
         
         if center:
@@ -125,102 +127,110 @@ class Nano:
             center_byte = 0x00
         
         cmd = b'\x20' + bytes([motor]) + bytes([center_byte])
-        err,response = self.write_read(cmd)
-        print(f"Response: {response}")
+        err,response = self.write_read(cmd, 3, 240.0)
         
         pos = 0
         if len(response) > 1:
             pos = struct.unpack("<h", response[1:1+2])[0]
-            print(f"Position: {pos}")
             
+        self.log_response(err, response, pos)
+        return err, response, pos
         
-        return err, pos
+    def MoveTo(self, motor: bytes, position: int) -> Tuple[int, bytes, int]:
+        print(f'\nMoveTo (motor: {motor}, position: {position})')
         
-    def MoveTo(self, motor: bytes, position: int) -> Tuple[int, int]:
-        print('\nMoveTo')
-        
-        cmd = b'\x21' + bytes([motor]) + struct.pack('<H', position)
+        cmd = b'\x21' + bytes([motor]) + struct.pack('<h', position)
         err,response = self.write_read(cmd, 3, 60.0)
-        print(f"Response: {response}")
         
         pos = 0
         if len(response) > 1:
             pos = struct.unpack("<h", response[1:1+2])[0]
-            print(f"Position: {pos}")
             
-        return err, pos
+        self.log_response(err, response)
+        return err, response, pos
       
-    def QueryPosition(self, motor: bytes) -> Tuple[int, int]:
+    def QueryPosition(self, motor: bytes) -> Tuple[int, bytes, int]:
         print('\nQueryPosition')
         
         cmd = b'\x22' + bytes([motor])
-        err,response = self.write_read(cmd)
-        print(f"Response: {response}")
+        err,response = self.write_read(cmd, 3)
         
         pos = 0
         if len(response) > 1:
             pos = struct.unpack("<h", response[1:1+2])[0]
-            print(f"Position: {pos}")  
         
-        return err, pos
+        self.log_response(err, response, pos)
+        return err, response, pos
         
-    def QueryPositionLimit(self, motor: bytes) -> Tuple[int, int]:
+    def QueryPositionLimit(self, motor: bytes) -> Tuple[int, bytes, int]:
         print('\nQueryPositionLimit')
         
         cmd = b'\x23' + bytes([motor])
-        err,response = self.write_read(cmd)
-        print(f"Response: {response}")
-        
-        pos = 0
-        if len(response) > 1:
-            pos = struct.unpack("<h", response[1:1+2])[0]
-            print(f"Limit: {pos}")
-            
-        return err, pos
-
-    def SetMotorPosition(self, motor: bytes, position: int) -> int:
-        print('\nSetMotorPosition')
-        
-        cmd = b'\x24' + bytes([motor]) + struct.pack('<H', position)
-        err,response = self.write_read(cmd)
-        print(f"Response: {response}")
-        
-        return err
-        
-    def GetVelocity(self) -> Tuple[int, int]:
-        print('\nGetVelocity')
-        
-        cmd = b'\x25'
-        err,response = self.write_read(cmd)
-        print(f"Response: {response}")
-        
-        velocity = 0
-        if len(response) > 1:
-            velocity = struct.unpack("<h", response[1:1+2])[0]
-            print(f"Velocity: {velocity}")
-            
-        return err, velocity
-            
-    def CalculateLimit(self):
-        print('\nCalculateLimit')
-        
-        cmd = b'\x26'
-        err,response = self.write_read(cmd, 3, 180.0)
-        
-        print(f"Response: {response}")
+        err,response = self.write_read(cmd, 3)
         
         limit = 0
         if len(response) > 1:
             limit = struct.unpack("<h", response[1:1+2])[0]
-            print(f"Calculated Limit: {limit}")
             
-        return err, limit
+        self.log_response(err, response, limit)
+        return err, response, limit
+
+    def SetMotorPosition(self, motor: bytes, position: int) -> Tuple[int, bytes]:
+        print('\nSetMotorPosition')
+        
+        cmd = b'\x24' + bytes([motor]) + struct.pack('<h', position)
+        err,response = self.write_read(cmd, 1)
+        
+        self.log_response(err, response)
+        return err, response
+        
+    def QueryVelocity(self) -> Tuple[int, bytes, int]:
+        print('\nGetVelocity')
+        
+        cmd = b'\x25'
+        err,response = self.write_read(cmd, 3)
+        
+        velocity = 0
+        if len(response) > 1:
+            velocity = struct.unpack("<h", response[1:1+2])[0]
             
-    def ChangeMode(self, mode: bytes) -> int:
+        self.log_response(err, response, velocity)    
+        return err, response, velocity
+            
+    def CalculateLimit(self) -> Tuple[int, bytes, int]:
+        print('\nCalculateLimit')
+        
+        cmd = b'\x26'
+        err,response = self.write_read(cmd, 3, 240.0)
+        
+        limit = 0
+        if len(response) > 1:
+            limit = struct.unpack("<h", response[1:1+2])[0]
+            
+        self.log_response(err, response, limit)    
+        return err, response, limit
+            
+    def ChangeMode(self, mode: bytes) -> Tuple[int, bytes]:
         print('\nChangeMode')
         
         cmd = b'\x30' + bytes([mode])
         err,response = self.write_read(cmd)
-        print(f"Response: {response}")
         
-        return err
+        self.log_response(err, response)
+        
+        return err, response
+    
+    def log_response(self, err, response, result=''):
+        if self._debug_log:            
+            print(f'Error Code: {err} \nResponse: {response} \nResult: {result}')
+
+"""    
+with Nano() as nano:
+    nano.connect('COM9')
+    nano.GetVelocity()
+    nano.QueryPosition(0)
+    nano.MoveTo(0, 10)
+    nano.QueryPosition(0)
+    nano.MoveTo(0, 2)
+    nano.QueryPosition(0)
+"""

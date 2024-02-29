@@ -24,8 +24,11 @@ class Config:
             file = open(self._filename, "w")
             json.dump(self._dict_values, file, indent=3)
             file.close()
+            
+        print(f'JsonConfig object created.')
         
     def load_json(self):
+        print(f'Loading Json file {self._filename}')
         # if file does not exist, create new file
         file = open(self._filename)
         self._dict_values = json.load(file)
@@ -42,5 +45,9 @@ class Config:
         json.dump(self._dict_values, file, indent=3)
         file.close()
         
+        print(dict_values)
+        print('Saved values to {self._filename}.')
+        
     def load_values(self):
+        print(f'Loading Json values: \n{self._dict_values}')
         return self._dict_values
